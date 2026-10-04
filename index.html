@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>গিট গেম বাংলা · খেলতে খেলতে গিট শিখুন</title>
+<meta name="description" content="ইন্টারঅ্যাক্টিভ গিট শেখার গেম — ১০ লেভেলে আসল গিট কমান্ড প্র্যাকটিস করুন, সম্পূর্ণ বাংলায়, অফলাইনে।">
+<style>
+  :root{
+    --bg:#050812;--card:#0c1220;--card-border:#1c2740;--text:#e8edf8;
+    --muted:#8b98b8;--green:#00a676;--green-2:#00c98f;--red:#ff6b6b;
+    --gold:#f5c04a;--orange:#ff9e4a;--blue:#5aa7ff;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    background:radial-gradient(1100px 500px at 50% -10%,#16101f 0%,var(--bg) 55%);
+    color:var(--text);min-height:100vh;
+    font-family:'Noto Sans Bengali','Hind Siliguri','SolaimanLipi',system-ui,sans-serif;
+  }
+  .wrap{max-width:900px;margin:0 auto;padding:26px 16px 60px}
+  header{text-align:center;margin-bottom:20px}
+  .badge{
+    display:inline-block;font-size:12.5px;color:var(--orange);
+    border:1px solid rgba(255,158,74,.4);border-radius:999px;padding:4px 14px;margin-bottom:10px;
+    background:rgba(255,158,74,.08);letter-spacing:.3px;
+  }
+  h1{font-size:clamp(25px,5vw,36px);font-weight:800}
+  .sub{color:var(--muted);font-size:14px;margin-top:6px;line-height:1.7}
+
+  .dots{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin:16px 0}
+  .dot{
+    width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:700;background:#080d18;border:1px solid var(--card-border);color:var(--muted);
+    cursor:pointer;transition:all .15s;
+  }
+  .dot.done{background:rgba(0,166,118,.15);border-color:var(--green);color:var(--green-2)}
+  .dot.cur{background:rgba(245,192,74,.12);border-color:var(--gold);color:var(--gold);box-shadow:0 0 12px rgba(245,192,74,.25)}
+
+  .mission{background:var(--card);border:1px solid var(--card-border);border-radius:16px;padding:18px 20px;margin-bottom:14px}
+  .m-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+  .m-title{font-size:17px;font-weight:800;color:var(--gold)}
+  .m-actions{display:flex;gap:8px}
+  .sbtn{
+    font-family:inherit;font-size:12.5px;color:var(--muted);background:#080d18;
+    border:1px solid var(--card-border);border-radius:8px;padding:5px 12px;cursor:pointer;transition:all .15s;
+  }
+  .sbtn:hover{color:var(--gold);border-color:var(--gold)}
+  .story{font-size:14.5px;line-height:1.8;color:var(--text)}
+  .goalbox{
+    margin-top:12px;background:rgba(245,192,74,.06);border:1px solid rgba(245,192,74,.25);
+    border-radius:11px;padding:11px 14px;font-size:14.5px;line-height:1.7;
+  }
+  .goalbox b{color:var(--gold)}
+  .hintbox{
+    margin-top:10px;background:rgba(90,167,255,.06);border:1px solid rgba(90,167,255,.3);
+    border-radius:11px;padding:11px 14px;font-size:14px;line-height:1.7;display:none;
+  }
+  .hintbox code{color:var(--blue);background:#080d18;padding:2px 8px;border-radius:6px;font-size:13.5px}
+  .winbox{
+    margin-top:12px;background:rgba(0,166,118,.1);border:1px solid rgba(0,201,143,.4);
+    border-radius:11px;padding:13px 16px;font-size:15px;display:none;
+    align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  }
+  .winbox.show{display:flex}
+  .winbox .wm{font-weight:700;color:var(--green-2)}
+  .nbtn{
+    font-family:inherit;font-size:14px;font-weight:700;color:#04120d;background:var(--green-2);
+    border:0;border-radius:10px;padding:9px 20px;cursor:pointer;transition:transform .1s;
+  }
+  .nbtn:hover{transform:translateY(-1px)}
+
+  .terminal{
+    background:#04060c;border:1px solid var(--card-border);border-radius:16px;overflow:hidden;
+  }
+  .t-bar{display:flex;align-items:center;gap:6px;padding:10px 14px;background:#0a0f1c;border-bottom:1px solid var(--card-border)}
+  .t-dot{width:11px;height:11px;border-radius:50%}
+  .t-title{font-size:12px;color:var(--muted);margin-left:8px;font-family:monospace}
+  .t-out{
+    height:280px;overflow-y:auto;padding:14px 16px;font-family:'JetBrains Mono','Fira Code',monospace;
+    font-size:13.5px;line-height:1.75;
+  }
+  .l-cmd{color:var(--green-2)}
+  .l-cmd::before{content:'$ ';color:var(--muted)}
+  .l-out{color:#b8c4dd;white-space:pre-wrap}
+  .l-err{color:var(--red)}
+  .l-ok{color:var(--gold)}
+  .l-sys{color:#6b7a9c;font-style:italic}
+  .t-inrow{display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--card-border);background:#070b14}
+  .t-prompt{color:var(--muted);font-family:monospace;font-size:14px}
+  .t-in{
+    flex:1;background:transparent;border:0;outline:0;color:var(--text);
+    font-family:'JetBrains Mono','Fira Code',monospace;font-size:14px;caret-color:var(--green-2);
+  }
+  footer{text-align:center;color:var(--muted);font-size:13px;margin-top:26px;line-height:1.9}
+  footer a{color:var(--green-2);text-decoration:none}
+  footer a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="badge">Day 7 of 100 · সম্পূর্ণ অফলাইন</span>
+    <h1>🎮 গিট গেম বাংলা</h1>
+    <p class="sub">খেলতে খেলতে গিট শিখুন — ১০ লেভেল, আসল কমান্ড, বাংলায় ব্যাখ্যা</p>
+  </header>
+
+  <div class="dots" id="dots"></div>
+
+  <div class="mission">
+    <div class="m-top">
+      <div class="m-title" id="m-title">—</div>
+      <div class="m-actions">
+        <button class="sbtn" onclick="showHint()">💡 হিন্ট</button>
+        <button class="sbtn" onclick="resetLevel()">↺ রিসেট</button>
+        <button class="sbtn" onclick="resetGame()">🗑 পুরো গেম রিসেট</button>
+      </div>
+    </div>
+    <div class="story" id="m-story"></div>
+    <div class="goalbox" id="m-goal"></div>
+    <div class="hintbox" id="m-hint"></div>
+    <div class="winbox" id="winbox">
+      <span class="wm" id="winmsg">🎉 দারুণ! লেভেল শেষ!</span>
+      <button class="nbtn" id="nextbtn" onclick="nextLevel()">পরের লেভেল →</button>
+    </div>
+  </div>
+
+  <div class="terminal">
+    <div class="t-bar">
+      <div class="t-dot" style="background:#ff5f56"></div>
+      <div class="t-dot" style="background:#ffbd2e"></div>
+      <div class="t-dot" style="background:#27c93f"></div>
+      <span class="t-title">rasel@bangladesh: ~/game</span>
+    </div>
+    <div class="t-out" id="tout"></div>
+    <div class="t-inrow">
+      <span class="t-prompt">$</span>
+      <input class="t-in" id="tin" autocomplete="off" spellcheck="false" placeholder="এখানে কমান্ড লিখুন (help লিখলে তালিকা পাবেন)">
+    </div>
+  </div>
+
+  <footer>
+    Day 7 of 100 · Built in public by <a href="https://github.com/iamzahirul" target="_blank" rel="noopener">Rasel (@iamzahirul)</a><br>
+    <span style="opacity:.75">🔒 প্রগ্রেস আপনার ব্রাউজারেই সেভ থাকে</span>
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   গিট গেম বাংলা — মিনি গিট সিমুলেটর + ১০ লেভেল
+   ============================================================ */
+
+/* ---------- গিট সিমুলেটর ---------- */
+function makeState(level) {
+  return {
+    repo: false, head: null, branches: {}, commits: [],
+    files: level.files.map(f => ({ name: f.n, st: f.st || 'untracked' })),
+    sawStatus: false, sawLog: false, merged: false, pushed: false,
+  };
+}
+
+function tokenize(cmd) {
+  const toks = []; const re = /"([^"]*)"|'([^']*)'|(\S+)/g; let m;
+  while ((m = re.exec(cmd))) toks.push(m[1] !== undefined ? m[1] : m[2] !== undefined ? m[2] : m[3]);
+  return toks;
+}
+
+/* প্রতিটা কমান্ড আউটপুট লাইন দেয়: {lines:[{t, c}], } */
+function runGit(s, cmdRaw) {
+  const out = [];
+  const push = (t, c) => out.push({ t, c: c || 'out' });
+  const cmd = cmdRaw.trim();
+  if (!cmd) return { lines: out };
+  if (cmd === 'help') {
+    push('সাপোর্টেড কমান্ড:', 'ok');
+    push('git init · git add <file|.> · git commit -m "মেসেজ" · git status');
+    push('git log [--oneline] · git branch [name] · git switch <name>');
+    push('git checkout <name> · git merge <name> · git push · clear');
+    return { lines: out };
+  }
+  if (cmd === 'clear') return { clear: true, lines: out };
+  const toks = tokenize(cmd);
+  if (toks[0] !== 'git') { push('এটা গিট কমান্ড না। সাহায্যের জন্য "help" লিখুন।', 'err'); return { lines: out }; }
+  const sub = toks[1];
+
+  if (!s.repo && sub !== 'init') {
+    push('প্রথমে রিপোজিটরি তৈরি করতে হবে — "git init" চালান!', 'err');
+    return { lines: out };
+  }
+
+  switch (sub) {
+    case 'init':
+      if (s.repo) push('আগেই ইনিট করা হয়েছে।', 'err');
+      else {
+        s.repo = true; s.head = 'main'; s.branches = { main: [] };
+        push('Initialized empty Git repository in ~/game/.git/');
+        push('✨ খালি রিপোজিটরি তৈরি হলো — ব্রাঞ্চ: main', 'ok');
+      }
+      break;
+
+    case 'add': {
+      const target = toks[2];
+      if (!target) { push('কোন ফাইল স্টেজ করবেন? যেমন: git add index.html বা git add .', 'err'); break; }
+      let changed = 0;
+      for (const f of s.files) {
+        const match = target === '.' || f.name === target || f.name.startsWith(target);
+        if (match && (f.st === 'untracked' || f.st === 'modified')) { f.st = 'staged'; changed++; }
+      }
+      if (changed) push(changed + 'টা ফাইল স্টেজ করা হলো ✅');
+      else push('স্টেজ করার মতো নতুন/পরিবর্তিত কিছু নেই।', 'err');
+      break;
+    }
+
+    case 'commit': {
+      let msg = null;
+      const mi = toks.indexOf('-m');
+      if (mi >= 0 && toks[mi + 1]) msg = toks[mi + 1];
+      const staged = s.files.filter(f => f.st === 'staged');
+      if (!msg) { push('কমিট মেসেজ দিতে ভুলেছেন! যেমন: git commit -m "প্রথম কমিট"', 'err'); break; }
+      if (!staged.length) { push('কিছু স্টেজ করা নেই — আগে "git add" করুন।', 'err'); break; }
+      const id = (s.commits.length + 1).toString(16).padStart(7, '0') + Math.floor(Math.random() * 99);
+      const commit = { id, msg, branch: s.head, files: staged.map(f => f.name) };
+      s.commits.push(commit);
+      s.branches[s.head].push(commit);
+      staged.forEach(f => f.st = 'committed');
+      push('[' + s.head + ' ' + id.slice(0, 7) + '] ' + msg);
+      push(staged.length + 'টা ফাইল কমিট হলো ✅');
+      break;
+    }
+
+    case 'status': {
+      s.sawStatus = true;
+      push('On branch ' + s.head);
+      const un = s.files.filter(f => f.st === 'untracked');
+      const mo = s.files.filter(f => f.st === 'modified');
+      const st = s.files.filter(f => f.st === 'staged');
+      if (un.length) { push('Untracked ফাইল:'); un.forEach(f => push('\t' + f.name, 'err')); }
+      if (mo.length) { push('পরিবর্তিত ফাইল:'); mo.forEach(f => push('\t' + f.name, 'err')); }
+      if (st.length) { push('স্টেজড ফাইল:'); st.forEach(f => push('\t' + f.name, 'ok')); }
+      if (!un.length && !mo.length && !st.length) push('nothing to commit, working tree clean ✨');
+      break;
+    }
+
+    case 'log': {
+      s.sawLog = true;
+      const list = s.branches[s.head];
+      if (!list.length) { push('এখনো কোনো কমিট নেই।', 'err'); break; }
+      const oneline = toks.includes('--oneline');
+      [...list].reverse().forEach(c => {
+        if (oneline) push(c.id.slice(0, 7) + ' ' + c.msg);
+        else { push('commit ' + c.id, 'ok'); push('    ' + c.msg); }
+      });
+      break;
+    }
+
+    case 'branch': {
+      const name = toks[2];
+      if (!name) {
+        Object.keys(s.branches).forEach(b => push((b === s.head ? '* ' : '  ') + b, b === s.head ? 'ok' : 'out'));
+      } else if (s.branches[name]) {
+        push('"' + name + '" নামে ব্রাঞ্চ আগেই আছে।', 'err');
+      } else {
+        s.branches[name] = [...s.branches[s.head]];
+        push('ব্রাঞ্চ "' + name + '" তৈরি হলো 🌿');
+      }
+      break;
+    }
+
+    case 'switch':
+    case 'checkout': {
+      const name = toks[2];
+      if (!name) { push('কোন ব্রাঞ্চে যাবেন? যেমন: git switch feature', 'err'); break; }
+      if (name === '-b') {
+        const nb = toks[3];
+        if (!nb) { push('-b এর পরে নতুন ব্রাঞ্চের নাম দিন।', 'err'); break; }
+        s.branches[nb] = [...s.branches[s.head]];
+        s.head = nb;
+        push('নতুন ব্রাঞ্চ "' + nb + '" তৈরি করে সেটিতে চলে গেলাম ✅');
+        break;
+      }
+      if (!s.branches[name]) { push('"' + name + '" নামে কোনো ব্রাঞ্চ নেই। "git branch" দিয়ে লিস্ট দেখুন।', 'err'); break; }
+      s.head = name;
+      push('Switched to branch "' + name + '" ✅');
+      break;
+    }
+
+    case 'merge': {
+      const name = toks[2];
+      if (!name) { push('কোন ব্রাঞ্চ মার্জ করবেন? যেমন: git merge feature', 'err'); break; }
+      if (!s.branches[name]) { push('"' + name + '" নামে কোনো ব্রাঞ্চ নেই।', 'err'); break; }
+      if (name === s.head) { push('নিজেকে নিজের সাথে মার্জ করা যায় না 😅', 'err'); break; }
+      const theirs = s.branches[name], ours = s.branches[s.head];
+      const newOnes = theirs.filter(c => !ours.includes(c));
+      if (!newOnes.length) { push('Already up to date — মার্জ করার কিছু নেই।'); break; }
+      newOnes.forEach(c => ours.push(c));
+      s.merged = true;
+      s.files.forEach(f => { if (f.st !== 'committed') f.st = 'committed'; });
+      push('Merge made by "ort" strategy.');
+      push('"' + name + '" এর ' + newOnes.length + 'টা কমিট "' + s.head + '" এ মার্জ হলো ✅');
+      break;
+    }
+
+    case 'push':
+      if (!s.pushed) {
+        s.pushed = true;
+        push('Enumerating objects: done.');
+        push('Writing objects: 100% (' + s.commits.length + '/' + s.commits.length + '), done.');
+        push('To github.com:rasel/game.git');
+        push('   main -> main 🚀 সফলভাবে পুশ হলো!', 'ok');
+      } else push('সব আগেই পুশ করা আছে।', 'err');
+      break;
+
+    default:
+      push('"' + sub + '" কমান্ডটা এখনো শেখানো হয়নি। "help" দেখুন।', 'err');
+  }
+  return { lines: out };
+}
+
+/* ---------- লেভেল ---------- */
+const LEVELS = [
+  {
+    t: 'লেভেল ১ · রিপোজিটরি তৈরি',
+    story: 'আপনি একটা নতুন ওয়েবসাইট প্রজেক্ট শুরু করেছেন। গিট দিয়ে ভার্সন কন্ট্রোল করতে হলে প্রথমে ফোল্ডারটাকে একটা রিপোজিটরি বানাতে হয়।',
+    goal: '<b>লক্ষ্য:</b> <code>git init</code> চালিয়ে রিপোজিটরি তৈরি করুন',
+    hint: 'টার্মিনালে লিখুন: <code>git init</code>',
+    files: [{ n: 'index.html' }, { n: 'style.css' }],
+    intro: ['👋 স্বাগতম! এখানে ২টা ফাইল আছে: index.html আর style.css', 'প্রতিটা লেভেলে লক্ষ্য পূরণ করলেই পরের লেভেল খুলবে। শুরু করুন!'],
+    check: s => s.repo,
+  },
+  {
+    t: 'লেভেল ২ · ফাইল স্টেজ করা',
+    story: 'রিপো তৈরি! এখন ফাইলগুলো কমিটের জন্য "স্টেজিং এরিয়া"য় পাঠাতে হবে। গিট তিনটা জায়গা রাখে: ওয়ার্কিং ডিরেক্টরি → স্টেজ → কমিট হিস্ট্রি।',
+    goal: '<b>লক্ষ্য:</b> সব ফাইল একসাথে স্টেজ করুন (<code>git add .</code>)',
+    hint: 'একটা নির্দিষ্ট ফাইল: <code>git add index.html</code><br>সব একসাথে: <code>git add .</code>',
+    files: [{ n: 'index.html' }, { n: 'style.css' }],
+    autoRepo: true,
+    intro: ['রিপোজিটরি রেডি। এবার ফাইলগুলো স্টেজ করুন।'],
+    check: s => s.repo && s.files.every(f => f.st !== 'untracked'),
+  },
+  {
+    t: 'লেভেল ৩ · প্রথম কমিট',
+    story: 'স্টেজ করা ফাইলগুলো এখন কমিট করলে সেগুলো গিটের হিস্ট্রিতে চিরতরে সেভ হয়ে যাবে — যেমন সেভ পয়েন্ট!',
+    goal: '<b>লক্ষ্য:</b> একটা মেসেজসহ কমিট করুন, যেমন <code>git commit -m "প্রথম কমিট"</code>',
+    hint: 'মেসেজটা কোটেশনের ভেতরে: <code>git commit -m "প্রথম কমিট"</code>',
+    files: [{ n: 'index.html' }, { n: 'style.css' }],
+    autoRepo: true,
+    intro: ['এবার অ্যাড + কমিট দুটোই আপনার হাতে!'],
+    check: s => s.repo && s.commits.length >= 1,
+  },
+  {
+    t: 'লেভেল ৪ · স্ট্যাটাস দেখা',
+    story: 'কাজ শেষে সব ক্লিন হয়েছে কিনা দেখা গিট-এর অভ্যাস। <code>git status</code> জানায় কোন ফাইল বাকি, কোনটা স্টেজড।',
+    goal: '<b>লক্ষ্য:</b> <code>git status</code> চালিয়ে দেখুন সব ক্লিন কিনা',
+    hint: 'শুধু লিখুন: <code>git status</code>',
+    files: [{ n: 'index.html', st: 'committed' }, { n: 'style.css', st: 'committed' }],
+    preCommits: 1,
+    intro: ['একটা কমিট আগেই করা আছে। স্ট্যাটাস চেক করুন।'],
+    check: s => s.repo && s.sawStatus && s.files.every(f => f.st === 'committed'),
+  },
+  {
+    t: 'লেভেল ৫ · কমিট হিস্ট্রি',
+    story: 'কয়টা কমিট হয়েছে, কী কী মেসেজ দিয়েছিলেন — হিস্ট্রি দেখা গিটের সুপারপাওয়ার। <code>--oneline</code> দিলে ছোট করে দেখায়।',
+    goal: '<b>লক্ষ্য:</b> <code>git log --oneline</code> দিয়ে হিস্ট্রি দেখুন',
+    hint: 'বড় করে দেখতে: <code>git log</code> · ছোট করে: <code>git log --oneline</code>',
+    files: [{ n: 'index.html', st: 'committed' }],
+    preCommits: 2,
+    intro: ['দুইটা কমিট আছে। হিস্ট্রি দেখুন!'],
+    check: s => s.repo && s.sawLog,
+  },
+  {
+    t: 'লেভেল ৬ · নতুন ব্রাঞ্চ',
+    story: 'একটা নতুন ফিচার বানাবেন, কিন্তু মূল কোড ভাঙতে চান না। সমাধান: আলাদা ব্রাঞ্চ! ব্রাঞ্চ মানে কোডের সমান্তরাল একটা পথ।',
+    goal: '<b>লক্ষ্য:</b> <code>feature</code> নামে একটা নতুন ব্রাঞ্চ তৈরি করুন',
+    hint: 'ব্রাঞ্চ তৈরি: <code>git branch feature</code> · সব ব্রাঞ্চ দেখতে: <code>git branch</code>',
+    files: [{ n: 'index.html', st: 'committed' }],
+    preCommits: 1,
+    intro: ['এবার ফিচার-ব্রাঞ্চ বানানোর পালা।'],
+    check: s => s.repo && !!s.branches['feature'],
+  },
+  {
+    t: 'লেভেল ৭ · ব্রাঞ্চে যাওয়া',
+    story: 'ব্রাঞ্চ তো তৈরি হলো, কিন্তু আপনি এখনো <code>main</code>-এ আছেন। ফিচারে কাজ করতে হলে ওই ব্রাঞ্চে সুইচ করতে হবে।',
+    goal: '<b>লক্ষ্য:</b> <code>feature</code> ব্রাঞ্চে চলে যান',
+    hint: 'নতুন স্টাইল: <code>git switch feature</code><br>পুরোনো স্টাইল (একই কাজ): <code>git checkout feature</code>',
+    files: [{ n: 'index.html', st: 'committed' }, { n: 'style.css', st: 'modified' }],
+    preCommits: 1,
+    branches: ['feature'],
+    intro: ['style.css ফাইলটা পরিবর্তন করেছেন। আগে ব্রাঞ্চ বদলান!'],
+    check: s => s.repo && s.head === 'feature',
+  },
+  {
+    t: 'লেভেল ৮ · ফিচার ব্রাঞ্চে কমিট',
+    story: 'এখন আপনি <code>feature</code> ব্রাঞ্চে। পরিবর্তিত <code>style.css</code> কমিট করলে মূল ব্রাঞ্চ অক্ষত থাকবে।',
+    goal: '<b>লক্ষ্য:</b> পরিবর্তিত ফাইলটা <code>feature</code> ব্রাঞ্চে অ্যাড + কমিট করুন',
+    hint: 'ধাপ ১: <code>git add style.css</code><br>ধাপ ২: <code>git commit -m "নতুন স্টাইল"</code>',
+    files: [{ n: 'index.html', st: 'committed' }, { n: 'style.css', st: 'modified' }],
+    preCommits: 1,
+    branches: ['feature'],
+    startBranch: 'feature',
+    intro: ['feature ব্রাঞ্চেই আছেন। এবার কমিট করুন।'],
+    check: s => s.repo && s.commits.some(c => c.branch === 'feature'),
+  },
+  {
+    t: 'লেভেল ৯ · মার্জ করা',
+    story: 'ফিচার রেডি! এবার <code>feature</code>-এর কাজটা মূল <code>main</code> ব্রাঞ্চে নিয়ে আসতে হবে — এটাই মার্জ।',
+    goal: '<b>লক্ষ্য:</b> আগে <code>main</code>-এ ফিরে যান, তারপর <code>git merge feature</code> করুন',
+    hint: 'ধাপ ১: <code>git switch main</code><br>ধাপ ২: <code>git merge feature</code>',
+    files: [{ n: 'index.html', st: 'committed' }, { n: 'style.css', st: 'committed' }],
+    preCommits: 1,
+    branches: ['feature'],
+    featureCommits: 1,
+    intro: ['feature-এ কমিট করা আছে। মার্জের পালা!'],
+    check: s => s.repo && s.head === 'main' && s.merged,
+  },
+  {
+    t: 'লেভেল ১০ · গিটহাবে পুশ 🚀',
+    story: 'সব কাজ শেষ, কোড পারফেক্ট! এবার কোডটা গিটহাবের রিমোট রিপোজিটরিতে পাঠানোর সময় — সবাই যেন দেখতে পায়।',
+    goal: '<b>লক্ষ্য:</b> <code>git push</code> চালিয়ে কোড গিটহাবে পাঠান (সিমুলেটেড)',
+    hint: 'আসল জীবনে: <code>git push -u origin main</code> — এখানে শুধু <code>git push</code>',
+    files: [{ n: 'index.html', st: 'committed' }, { n: 'style.css', st: 'committed' }],
+    preCommits: 2,
+    intro: ['শেষ লেভেল! কোড পুশ করুন।'],
+    check: s => s.repo && s.pushed,
+  },
+];
+
+/* ---------- গেম স্টেট ---------- */
+const $ = id => document.getElementById(id);
+let cur = 0, S = null, won = false;
+const STORE = 'git-game-bangla-v1';
+
+function loadProgress() {
+  try { return parseInt(localStorage.getItem(STORE) || '0', 10); } catch (e) { return 0; }
+}
+function saveProgress(n) {
+  try { localStorage.setItem(STORE, String(n)); } catch (e) {}
+}
+
+function bn(x) { return String(x).replace(/[0-9]/g, d => '০১২৩৪৫৬৭৮৯'[d]); }
+
+function setupLevel(i) {
+  cur = i;
+  won = false;
+  const L = LEVELS[i];
+  S = makeState(L);
+  // প্রি-কমিট/ব্রাঞ্চ সেটআপ
+  if (L.preCommits || L.autoRepo) {
+    S.repo = true; S.head = 'main'; S.branches.main = [];
+    for (let k = 0; k < (L.preCommits || 0); k++) {
+      const c = { id: 'a1b2c3d' + k, msg: k === 0 ? 'প্রথম কমিট' : 'আপডেট ' + bn(k), branch: 'main', files: [] };
+      S.commits.push(c); S.branches.main.push(c);
+    }
+  }
+  (L.branches || []).forEach(b => {
+    S.branches[b] = [...S.branches.main];
+    (L.featureCommits || 0) && b === 'feature' && (() => {
+      const c = { id: 'f0f0f0f1', msg: 'ফিচার যোগ হলো', branch: 'feature', files: ['style.css'] };
+      S.commits.push(c); S.branches.feature.push(c);
+    })();
+  });
+  if (L.startBranch) S.head = L.startBranch;
+
+  $('m-title').textContent = L.t + ' (' + bn(i + 1) + '/' + bn(LEVELS.length) + ')';
+  $('m-story').innerHTML = L.story;
+  $('m-goal').innerHTML = L.goal;
+  $('m-hint').style.display = 'none';
+  $('m-hint').innerHTML = '💡 ' + L.hint;
+  $('winbox').classList.remove('show');
+  $('tout').innerHTML = '';
+  (L.intro || []).forEach(t => printLine(t, 'sys'));
+  renderDots();
+  $('tin').focus();
+}
+
+function renderDots() {
+  const done = loadProgress();
+  $('dots').innerHTML = LEVELS.map((L, i) => {
+    let cls = 'dot';
+    if (i < done) cls += ' done';
+    if (i === cur) cls += ' cur';
+    return '<div class="' + cls + '" onclick="gotoLevel(' + i + ')">' + bn(i + 1) + '</div>';
+  }).join('');
+}
+
+function gotoLevel(i) {
+  const done = loadProgress();
+  if (i > done) { printLine('🔒 আগে লেভেল ' + bn(done + 1) + ' শেষ করুন!', 'err'); return; }
+  setupLevel(i);
+}
+
+function printLine(t, c) {
+  const div = document.createElement('div');
+  div.className = 'l-' + (c || 'out');
+  div.textContent = t;
+  $('tout').appendChild(div);
+  $('tout').scrollTop = $('tout').scrollHeight;
+}
+
+function handleCmd(raw) {
+  if (won) return;
+  printLine(raw, 'cmd');
+  const res = runGit(S, raw);
+  if (res.clear) { $('tout').innerHTML = ''; return; }
+  res.lines.forEach(l => printLine(l.t, l.c));
+  if (LEVELS[cur].check(S)) win();
+}
+
+function win() {
+  won = true;
+  const done = loadProgress();
+  const isLast = cur === LEVELS.length - 1;
+  if (!isLast) saveProgress(Math.max(done, cur + 1));
+  else saveProgress(LEVELS.length);
+  renderDots();
+  printLine('', 'out');
+  printLine('🎉 লেভেল ' + bn(cur + 1) + ' সম্পন্ন! ' + (isLast ? 'আপনি এখন গিটের বেসিক জানেন!' : ''), 'ok');
+  $('winmsg').textContent = isLast ? '🏆 সব লেভেল শেষ! আপনি এখন গিটের বেসিক মাস্টার!' : '🎉 দারুণ! লেভেল ' + bn(cur + 1) + ' শেষ!';
+  $('nextbtn').textContent = isLast ? '🔄 আবার খেলুন' : 'পরের লেভেল →';
+  $('winbox').classList.add('show');
+}
+
+function nextLevel() {
+  if (cur === LEVELS.length - 1) setupLevel(0);
+  else setupLevel(cur + 1);
+}
+function resetLevel() { setupLevel(cur); }
+function resetGame() { saveProgress(0); setupLevel(0); }
+function showHint() { $('m-hint').style.display = 'block'; }
+
+/* ---------- init ---------- */
+$('tin').addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const v = $('tin').value;
+    $('tin').value = '';
+    if (v.trim()) handleCmd(v.trim());
+  }
+});
+setupLevel(Math.min(loadProgress(), LEVELS.length - 1));
+</script>
+</body>
+</html>
